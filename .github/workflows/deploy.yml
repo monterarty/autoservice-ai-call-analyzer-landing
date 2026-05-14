@@ -66,7 +66,7 @@ jobs:
           HOST_PORT=${{ vars.HOST_PORT || '3301' }}
           NODE_ENV=production
           EOF
-          chmod 600 .env
+          chmod 644 .env
 
       - name: Copy files to server
         uses: appleboy/scp-action@v0.1.7
