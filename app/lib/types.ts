@@ -43,6 +43,15 @@ export interface CallbackCommitment {
   reason: string | null;
 }
 
+export type LeadConfidence = "high" | "medium" | "low";
+
+export interface LeadAssessment {
+  is_lead: boolean;
+  confidence: LeadConfidence;
+  rationale: string;
+  signals: string[];
+}
+
 export interface CallAnalysis {
   car: {
     make: string | null;
@@ -59,6 +68,7 @@ export interface CallAnalysis {
   category_summary: CategorySummary;
   total_penalty: number;
   callback_commitment: CallbackCommitment;
+  lead: LeadAssessment;
   strengths: string[];
   manager_note: string;
 }

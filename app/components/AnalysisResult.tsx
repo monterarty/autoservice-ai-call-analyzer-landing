@@ -5,6 +5,7 @@ import type {
   AnalyzeResponseData,
   CallAnalysis,
   CategorySummaryItem,
+  LeadConfidence,
   WorkerErrorCategory,
 } from "../lib/types";
 import {
@@ -22,6 +23,7 @@ export default function AnalysisResult({ data }: Props) {
   const { transcript, analysis } = data;
   return (
     <div className="space-y-6">
+      <LeadBadge analysis={analysis} />
       <CarHeader analysis={analysis} />
       <QuickFacts analysis={analysis} />
       <ManagerNoteBlock note={analysis.manager_note} />
@@ -31,6 +33,47 @@ export default function AnalysisResult({ data }: Props) {
       <CallbackBlock analysis={analysis} />
       <Strengths list={analysis.strengths} />
       <TranscriptBlock transcript={transcript} />
+    </div>
+  );
+}
+
+const CONFIDENCE_LABEL: Record<LeadConfidence, string> = {
+  high: "высокая уверенность",
+  medium: "средняя уверенность",
+  low: "низкая уверенность",
+};
+
+function LeadBadge({ analysis }: { analysis: CallAnalysis }) {
+  const { is_lead, confidence, rationale, signals } = analysis.lead;
+  const wrapper = is_lead
+    ? "border-emerald-300 bg-emerald-50"
+    : "border-zinc-300 bg-zinc-50";
+  const pill = is_lead
+    ? "bg-emerald-600 text-white"
+    : "bg-zinc-600 text-white";
+  return (
+    <div className={`rounded-2xl border p-5 ${wrapper}`}>
+      <div className="flex items-center gap-3">
+        <span
+          className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold tracking-wide ${pill}`}
+        >
+          {is_lead ? "ЛИД" : "НЕ ЛИД"}
+        </span>
+        <span className="text-xs uppercase tracking-wider text-zinc-500">
+          {CONFIDENCE_LABEL[confidence]}
+        </span>
+      </div>
+      <p className="mt-3 text-sm leading-relaxed text-zinc-800">{rationale}</p>
+      {signals.length > 0 && (
+        <ul className="mt-3 space-y-1">
+          {signals.map((s, i) => (
+            <li key={i} className="flex gap-2 text-xs text-zinc-700">
+              <span className="select-none text-zinc-400">•</span>
+              <span>{s}</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
