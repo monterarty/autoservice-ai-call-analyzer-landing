@@ -2,6 +2,14 @@
 
 import { useState } from "react";
 import AnalysisResult from "./components/AnalysisResult";
+import {
+  ANALYSIS_MODELS,
+  DEFAULT_ANALYSIS_MODEL,
+  DEFAULT_TRANSCRIPTION_MODEL,
+  TRANSCRIPTION_MODELS,
+  type AnalysisModelValue,
+  type TranscriptionModelValue,
+} from "./lib/models";
 import type { AnalyzeResponse, AnalyzeResponseData } from "./lib/types";
 
 const EXAMPLE_URL =
@@ -10,6 +18,10 @@ const EXAMPLE_URL =
 export default function Home() {
   const [audioUrl, setAudioUrl] = useState("");
   const [operatorHint, setOperatorHint] = useState("");
+  const [transcriptionModel, setTranscriptionModel] =
+    useState<TranscriptionModelValue>(DEFAULT_TRANSCRIPTION_MODEL);
+  const [analysisModel, setAnalysisModel] =
+    useState<AnalysisModelValue>(DEFAULT_ANALYSIS_MODEL);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AnalyzeResponseData | null>(null);
@@ -30,6 +42,8 @@ export default function Home() {
         body: JSON.stringify({
           audio_url: audioUrl.trim(),
           operator_hint: operatorHint.trim() || undefined,
+          transcription_model: transcriptionModel,
+          analysis_model: analysisModel,
         }),
       });
 
@@ -46,6 +60,11 @@ export default function Home() {
       setElapsed(Math.round(performance.now() - start));
     }
   };
+
+  const sttHint = TRANSCRIPTION_MODELS.find(
+    (m) => m.value === transcriptionModel,
+  )?.hint;
+  const llmHint = ANALYSIS_MODELS.find((m) => m.value === analysisModel)?.hint;
 
   return (
     <div className="flex flex-1 flex-col bg-zinc-50">
@@ -105,6 +124,59 @@ export default function Home() {
             />
           </div>
 
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label
+                htmlFor="transcription_model"
+                className="mb-1 block text-sm font-medium text-zinc-700"
+              >
+                Модель распознавания
+              </label>
+              <select
+                id="transcription_model"
+                value={transcriptionModel}
+                onChange={(e) =>
+                  setTranscriptionModel(e.target.value as TranscriptionModelValue)
+                }
+                className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
+              >
+                {TRANSCRIPTION_MODELS.map((m) => (
+                  <option key={m.value} value={m.value}>
+                    {m.label}
+                  </option>
+                ))}
+              </select>
+              {sttHint && (
+                <p className="mt-1 text-xs text-zinc-500">{sttHint}</p>
+              )}
+            </div>
+            <div>
+              <label
+                htmlFor="analysis_model"
+                className="mb-1 block text-sm font-medium text-zinc-700"
+              >
+                Модель анализа
+              </label>
+              <select
+                id="analysis_model"
+                value={analysisModel}
+                onChange={(e) =>
+                  setAnalysisModel(e.target.value as AnalysisModelValue)
+                }
+                className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
+              >
+                {ANALYSIS_MODELS.map((m) => (
+                  <option key={m.value} value={m.value}>
+                    {m.label}
+                  </option>
+                ))}
+              </select>
+              {llmHint && (
+                <p className="mt-1 text-xs text-zinc-500">{llmHint}</p>
+              )}
+            </div>
+          </div>
+
           <div className="flex items-center justify-between gap-3">
             <button
               type="submit"
@@ -129,7 +201,7 @@ export default function Home() {
 
         {loading && (
           <div className="mt-6 rounded-2xl border border-zinc-200 bg-white p-5 text-sm text-zinc-600">
-            Скачиваю аудио → транскрипция (Whisper) → анализ (GPT-4o). Обычно 20–60 секунд.
+            Скачиваю аудио → транскрипция → анализ. Обычно 20–60 секунд.
           </div>
         )}
 

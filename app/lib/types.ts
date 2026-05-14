@@ -73,9 +73,28 @@ export interface CallAnalysis {
   manager_note: string;
 }
 
+export interface UsageInfo {
+  audio_bytes: number;
+  audio_seconds_estimated: number;
+  transcription: {
+    model: string;
+    cost_usd: number;
+  };
+  analysis: {
+    model: string;
+    input_tokens: number;
+    cached_tokens: number;
+    output_tokens: number;
+    cost_usd: number;
+  };
+  total_cost_usd: number;
+  elapsed_ms: number;
+}
+
 export interface AnalyzeResponseData {
   transcript: string;
   analysis: CallAnalysis;
+  usage?: UsageInfo;
 }
 
 export type AnalyzeResponse =

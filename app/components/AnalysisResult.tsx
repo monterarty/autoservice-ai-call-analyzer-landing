@@ -6,6 +6,7 @@ import type {
   CallAnalysis,
   CategorySummaryItem,
   LeadConfidence,
+  UsageInfo,
   WorkerErrorCategory,
 } from "../lib/types";
 import {
@@ -20,10 +21,11 @@ interface Props {
 }
 
 export default function AnalysisResult({ data }: Props) {
-  const { transcript, analysis } = data;
+  const { transcript, analysis, usage } = data;
   return (
     <div className="space-y-6">
       <LeadBadge analysis={analysis} />
+      {usage && <UsageBlock usage={usage} />}
       <CarHeader analysis={analysis} />
       <QuickFacts analysis={analysis} />
       <ManagerNoteBlock note={analysis.manager_note} />
@@ -33,6 +35,85 @@ export default function AnalysisResult({ data }: Props) {
       <CallbackBlock analysis={analysis} />
       <Strengths list={analysis.strengths} />
       <TranscriptBlock transcript={transcript} />
+    </div>
+  );
+}
+
+function UsageBlock({ usage }: { usage: UsageInfo }) {
+  const fmtSec = (s: number) =>
+    s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${s % 60}s`;
+  const fmtCost = (c: number) => `$${c.toFixed(5)}`;
+  const cachedPct =
+    usage.analysis.input_tokens > 0
+      ? Math.round(
+          (usage.analysis.cached_tokens / usage.analysis.input_tokens) * 100,
+        )
+      : 0;
+  return (
+    <div className="rounded-2xl border border-zinc-200 bg-white p-5">
+      <div className="mb-3 flex items-center justify-between">
+        <div className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+          Стоимость и токены
+        </div>
+        <div className="font-mono text-base font-semibold text-zinc-900">
+          {fmtCost(usage.total_cost_usd)}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+        <Stat
+          label="Время"
+          value={`${(usage.elapsed_ms / 1000).toFixed(1)} c`}
+        />
+        <Stat
+          label="Аудио"
+          value={`~${fmtSec(usage.audio_seconds_estimated)}`}
+          sub={`${(usage.audio_bytes / 1024).toFixed(0)} KB`}
+        />
+        <Stat
+          label="Транскрипция"
+          value={fmtCost(usage.transcription.cost_usd)}
+          sub={usage.transcription.model}
+        />
+        <Stat
+          label="Анализ"
+          value={fmtCost(usage.analysis.cost_usd)}
+          sub={usage.analysis.model}
+        />
+      </div>
+
+      <div className="mt-3 rounded-lg bg-zinc-50 p-3 font-mono text-xs text-zinc-700">
+        input <strong>{usage.analysis.input_tokens}</strong>
+        {usage.analysis.cached_tokens > 0 && (
+          <span className="text-emerald-700">
+            {" "}
+            (cached {usage.analysis.cached_tokens} = {cachedPct}%)
+          </span>
+        )}{" "}
+        · output <strong>{usage.analysis.output_tokens}</strong>
+      </div>
+    </div>
+  );
+}
+
+function Stat({
+  label,
+  value,
+  sub,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+}) {
+  return (
+    <div>
+      <div className="text-xs font-medium uppercase tracking-wider text-zinc-500">
+        {label}
+      </div>
+      <div className="mt-0.5 font-mono text-sm font-medium text-zinc-900">
+        {value}
+      </div>
+      {sub && <div className="text-[10px] text-zinc-500">{sub}</div>}
     </div>
   );
 }
