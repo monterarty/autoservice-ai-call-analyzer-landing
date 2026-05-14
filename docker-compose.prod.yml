@@ -1,0 +1,18 @@
+services:
+  voice-analyzer-landing:
+    image: ${IMAGE:-ghcr.io/monterarty/autoservice-ai-call-analyzer-landing:latest}
+    container_name: voice-analyzer-landing
+    pull_policy: always
+    ports:
+      - "${HOST_PORT:-3301}:3000"
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s

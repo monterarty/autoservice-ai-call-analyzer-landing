@@ -1,0 +1,117 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+            type=sha,format=short,prefix=sha-
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate .env
+        run: |
+          cat > .env <<EOF
+          VOICE_ANALYZER_URL=${{ vars.VOICE_ANALYZER_URL || 'http://host.docker.internal:3300' }}
+          VOICE_ANALYZER_API_KEY=${{ secrets.VOICE_ANALYZER_API_KEY }}
+          HOST_PORT=${{ vars.HOST_PORT || '3301' }}
+          NODE_ENV=production
+          EOF
+          chmod 600 .env
+
+      - name: Copy files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          source: docker-compose.prod.yml,.env
+          target: /home/deployer/voice-analyzer-landing
+
+      - name: Deploy on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            set -e
+            cd /home/deployer/voice-analyzer-landing
+
+            echo "::group::Login to GHCR"
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            echo "::endgroup::"
+
+            echo "::group::Pull image"
+            docker compose -f docker-compose.prod.yml pull
+            echo "::endgroup::"
+
+            echo "::group::Up"
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            echo "::endgroup::"
+
+            echo "::group::Wait for healthy"
+            HOST_PORT="${HOST_PORT:-3301}"
+            for i in {1..20}; do
+              if curl -fsS http://localhost:${HOST_PORT} > /dev/null; then
+                echo "healthy on :${HOST_PORT}"
+                break
+              fi
+              echo "waiting... ($i/20)"
+              sleep 2
+            done
+
+            echo "::group::Cleanup old images"
+            docker image prune -f
+            echo "::endgroup::"
