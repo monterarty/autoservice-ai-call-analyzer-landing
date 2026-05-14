@@ -32,5 +32,5 @@ export const ANALYSIS_MODELS = [
 export type TranscriptionModelValue = (typeof TRANSCRIPTION_MODELS)[number]["value"];
 export type AnalysisModelValue = (typeof ANALYSIS_MODELS)[number]["value"];
 
-export const DEFAULT_TRANSCRIPTION_MODEL: TranscriptionModelValue = "gpt-4o-transcribe";
-export const DEFAULT_ANALYSIS_MODEL: AnalysisModelValue = "gpt-4o-2024-08-06";
+export const DEFAULT_TRANSCRIPTION_MODEL: TranscriptionModelValue = "gpt-4o-mini-transcribe";
+export const DEFAULT_ANALYSIS_MODEL: AnalysisModelValue = "gpt-5.4-mini";
