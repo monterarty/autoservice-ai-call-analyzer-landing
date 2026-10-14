@@ -1,11 +1,23 @@
 export const TRANSCRIPTION_MODELS = [
+  { value: "gpt-transcribe", label: "gpt-transcribe", hint: "$0.0045/мин · новая (июль 2026), точнее gpt-4o-transcribe" },
   { value: "gpt-4o-transcribe", label: "gpt-4o-transcribe", hint: "$0.006/мин · лучшее качество для русского" },
   { value: "gpt-4o-mini-transcribe", label: "gpt-4o-mini-transcribe", hint: "$0.003/мин · в 2 раза дешевле, чуть слабее" },
   { value: "whisper-1", label: "whisper-1", hint: "$0.006/мин · старая модель" },
 ] as const;
 
 export const ANALYSIS_MODELS = [
-  // GPT-5.4/5.5 — current flagship
+  // GPT-6 — актуальное поколение (сентябрь 2026)
+  { value: "gpt-6.1-sol", label: "gpt-6.1-sol", hint: "$2.00 / $0.10 / $10 · новейшая, кеш вдвое дешевле gpt-6-sol" },
+  { value: "gpt-6-astra", label: "gpt-6-astra", hint: "$10 / $1.00 / $50 · флагман, самый умный и дорогой" },
+  { value: "gpt-6-sol", label: "gpt-6-sol", hint: "$2.00 / $0.20 / $10 · дешевле gpt-5.4 при лучшем качестве" },
+  { value: "gpt-6-luna", label: "gpt-6-luna", hint: "$0.10 / $0.01 / $0.50 · самая дешёвая из новых" },
+
+  // GPT-5.6 (июнь 2026)
+  { value: "gpt-5.6-sol", label: "gpt-5.6-sol", hint: "$4.00 / $0.40 / $20 · промо-цена до 21.11.2026" },
+  { value: "gpt-5.6-terra", label: "gpt-5.6-terra", hint: "$2.00 / $0.20 / $12" },
+  { value: "gpt-5.6-luna", label: "gpt-5.6-luna", hint: "$0.20 / $0.02 / $1.20" },
+
+  // GPT-5.4/5.5
   { value: "gpt-5.4", label: "gpt-5.4", hint: "$2.50 / $0.25 / $15 · флагман, кеш в 10× дешевле gpt-4o" },
   { value: "gpt-5.4-mini", label: "gpt-5.4-mini", hint: "$0.75 / $0.075 / $4.50 · средняя" },
   { value: "gpt-5.4-nano", label: "gpt-5.4-nano", hint: "$0.20 / $0.02 / $1.25 · топчик по цене" },
