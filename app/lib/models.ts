@@ -10,7 +10,7 @@ export const ANALYSIS_MODELS = [
   { value: "gpt-6.1-sol", label: "gpt-6.1-sol", hint: "$2.00 / $0.10 / $10 · новейшая, кеш вдвое дешевле gpt-6-sol" },
   { value: "gpt-6-astra", label: "gpt-6-astra", hint: "$10 / $1.00 / $50 · флагман, самый умный и дорогой" },
   { value: "gpt-6-sol", label: "gpt-6-sol", hint: "$2.00 / $0.20 / $10 · дешевле gpt-5.4 при лучшем качестве" },
-  { value: "gpt-6-luna", label: "gpt-6-luna", hint: "$0.10 / $0.01 / $0.50 · самая дешёвая из новых" },
+  { value: "gpt-6-luna", label: "gpt-6-luna", hint: "$0.10 / $0.01 / $0.50 · по умолчанию: лучшее цена/качество, ~$0.002/звонок" },
 
   // GPT-5.6 (июнь 2026)
   { value: "gpt-5.6-sol", label: "gpt-5.6-sol", hint: "$4.00 / $0.40 / $20 · промо-цена до 21.11.2026" },
@@ -19,7 +19,7 @@ export const ANALYSIS_MODELS = [
 
   // GPT-5.4/5.5
   { value: "gpt-5.4", label: "gpt-5.4", hint: "$2.50 / $0.25 / $15 · флагман, кеш в 10× дешевле gpt-4o" },
-  { value: "gpt-5.4-mini", label: "gpt-5.4-mini", hint: "$0.75 / $0.075 / $4.50 · средняя" },
+  { value: "gpt-5.4-mini", label: "gpt-5.4-mini", hint: "$0.75 / $0.075 / $4.50 · прежний дефолт" },
   { value: "gpt-5.4-nano", label: "gpt-5.4-nano", hint: "$0.20 / $0.02 / $1.25 · топчик по цене" },
   { value: "gpt-5.5", label: "gpt-5.5", hint: "$5.00 / $0.50 / $30 · самый умный" },
 
@@ -44,5 +44,5 @@ export const ANALYSIS_MODELS = [
 export type TranscriptionModelValue = (typeof TRANSCRIPTION_MODELS)[number]["value"];
 export type AnalysisModelValue = (typeof ANALYSIS_MODELS)[number]["value"];
 
-export const DEFAULT_TRANSCRIPTION_MODEL: TranscriptionModelValue = "gpt-4o-mini-transcribe";
-export const DEFAULT_ANALYSIS_MODEL: AnalysisModelValue = "gpt-5.4-mini";
+export const DEFAULT_TRANSCRIPTION_MODEL: TranscriptionModelValue = "gpt-transcribe";
+export const DEFAULT_ANALYSIS_MODEL: AnalysisModelValue = "gpt-6-luna";
